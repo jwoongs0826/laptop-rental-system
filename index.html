@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>노트북 대여 관리 시스템</title>
+    <style>
+        :root {
+            --color-white: rgba(255, 255, 255, 1);
+            --color-black: rgba(0, 0, 0, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-gray-400: rgba(119, 124, 124, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-brown-600: rgba(94, 82, 64, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-400: rgba(45, 166, 178, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-red-500: rgba(192, 21, 47, 1);
+            --color-orange-400: rgba(230, 129, 97, 1);
+            --color-orange-500: rgba(168, 75, 47, 1);
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+            --color-slate-500-rgb: 98, 108, 113;
+            --color-red-500-rgb: 192, 21, 47;
+            --color-red-400-rgb: 255, 84, 89;
+            --color-orange-500-rgb: 168, 75, 47;
+            --color-orange-400-rgb: 230, 129, 97;
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-primary-active: var(--color-teal-700);
+            --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-secondary-active: rgba(var(--color-brown-600-rgb), 0.25);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-btn-primary-text: var(--color-cream-50);
+            --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-error: var(--color-red-500);
+            --color-success: var(--color-teal-500);
+            --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-gray-400-rgb: 119, 124, 124;
+                --color-teal-300-rgb: 50, 184, 198;
+                --color-gray-300-rgb: 167, 169, 169;
+                --color-gray-200-rgb: 245, 245, 245;
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-primary-hover: var(--color-teal-400);
+                --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+                --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-error: var(--color-red-400);
+                --color-success: var(--color-teal-300);
+                --color-btn-primary-text: var(--color-slate-900);
+                --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--color-text);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--color-text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--color-text);
+        }
+
+        .tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .laptop-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .laptop-item {
+            background: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.2s;
+        }
+
+        .laptop-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .laptop-info {
+            flex: 1;
+        }
+
+        .laptop-number {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+
+        .laptop-model {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .laptop-serial {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            font-family: monospace;
+        }
+
+        .laptop-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-available {
+            background-color: rgba(var(--color-teal-500-rgb), 0.15);
+            color: var(--color-success);
+            border: 1px solid rgba(var(--color-teal-500-rgb), 0.25);
+        }
+
+        .status-rented {
+            background-color: rgba(var(--color-red-500-rgb), 0.15);
+            color: var(--color-error);
+            border: 1px solid rgba(var(--color-red-500-rgb), 0.25);
+        }
+
+        .rental-info {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-top: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: var(--color-btn-primary-text);
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--color-secondary);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-secondary-hover);
+        }
+
+        .form-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--color-text);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--color-text);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 1rem;
+            background: var(--color-surface);
+            color: var(--color-text);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-surface);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .history-table th {
+            background: var(--color-secondary);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--color-text);
+        }
+
+        .history-table td {
+            padding: 12px;
+            border-top: 1px solid var(--color-card-border);
+            font-size: 0.875rem;
+            color: var(--color-text);
+        }
+
+        .history-table tr:hover {
+            background: var(--color-secondary);
+        }
+
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .user-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .user-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 8px;
+        }
+
+        .user-detail {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        .summary-label {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--color-text-secondary);
+        }
+
+        .checkbox-list {
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--color-surface);
+        }
+
+        .checkbox-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--color-card-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .checkbox-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkbox-item:hover {
+            background: var(--color-secondary);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .checkbox-label {
+            flex: 1;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-list-empty {
+            padding: 24px;
+            text-align: center;
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖥️ 노트북 대여 관리 시스템</h1>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="laptops">노트북 현황</button>
+            <button class="tab" data-tab="rental">대여/반납</button>
+            <button class="tab" data-tab="users">사용자 관리</button>
+            <button class="tab" data-tab="history">대여 이력</button>
+        </div>
+
+        <div id="laptops" class="tab-content active">
+            <div class="summary">
+                <div class="summary-card">
+                    <div class="summary-number" id="total-count">5</div>
+                    <div class="summary-label">전체 노트북</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="available-count">5</div>
+                    <div class="summary-label">대여 가능</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="rented-count">0</div>
+                    <div class="summary-label">대여 중</div>
+                </div>
+            </div>
+
+            <div id="laptop-list" class="laptop-list"></div>
+        </div>
+
+        <div id="rental" class="tab-content">
+            <div class="form-section">
+                <h2>📤 노트북 대여</h2>
+                <div class="form-group">
+                    <label for="rent-user">사용자 선택</label>
+                    <select id="rent-user">
+                        <option value="">사용자를 선택하세요</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>대여할 노트북 선택 (여러 개 선택 가능)</label>
+                    <div id="rent-laptop-list" class="checkbox-list"></div>
+                </div>
+                <button class="btn btn-primary" onclick="rentLaptop()">선택한 노트북 대여하기</button>
+            </div>
+
+            <div class="form-section">
+                <h2>📥 노트북 반납</h2>
+                <div class="form-group">
+                    <label>반납할 노트북 선택 (여러 개 선택 가능)</label>
+                    <div id="return-laptop-list" class="checkbox-list"></div>
+                </div>
+                <button class="btn btn-primary" onclick="returnLaptop()">선택한 노트북 반납하기</button>
+            </div>
+        </div>
+
+        <div id="users" class="tab-content">
+            <div class="form-section">
+                <h2>사용자 등록</h2>
+                <div class="form-group">
+                    <label for="user-name">이름</label>
+                    <input type="text" id="user-name" placeholder="이름을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="user-dept">부서</label>
+                    <input type="text" id="user-dept" placeholder="부서를 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="user-phone">연락처</label>
+                    <input type="tel" id="user-phone" placeholder="010-0000-0000">
+                </div>
+                <button class="btn btn-primary" onclick="addUser()">등록하기</button>
+            </div>
+
+            <h2 style="margin-bottom: 16px;">등록된 사용자</h2>
+            <div id="user-list" class="user-list"></div>
+        </div>
+
+        <div id="history" class="tab-content">
+            <h2 style="margin-bottom: 16px;">대여 이력</h2>
+            <div id="history-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Google Sheets 설정
+        const SPREADSHEET_ID = '1DY-9x3SmD5W9uGUsIL2xsuKY9VNLRzeR_D7lar83CsY/edit?gid=0#gid=0';
+        const API_KEY = 'AIzaSyALC7BWBlTCKay9U1v20puWaBY4ucAe6aM';
+        const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
+
+        let laptops = [
+            {id: 1, model: "LG gram 16", serial: "LG2024001", status: "available", rentedBy: null, rentedAt: null},
+            {id: 2, model: "LG gram 16", serial: "LG2024002", status: "available", rentedBy: null, rentedAt: null},
+            {id: 3, model: "삼성 갤럭시북", serial: "SS2024001", status: "available", rentedBy: null, rentedAt: null},
+            {id: 4, model: "맥북 에어 M2", serial: "AP2024001", status: "available", rentedBy: null, rentedAt: null},
+            {id: 5, model: "맥북 에어 M2", serial: "AP2024002", status: "available", rentedBy: null, rentedAt: null}
+        ];
+
+        let users = [
+            {id: 1, name: "김지훈", department: "개발팀", phone: "010-1234-5678"},
+            {id: 2, name: "이서연", department: "디자인팀", phone: "010-2345-6789"},
+            {id: 3, name: "박민수", department: "마케팅팀", phone: "010-3456-7890"}
+        ];
+
+        let rentalHistory = [];
+        let nextUserId = 4;
+
+        // Google Sheets 연동 함수
+        async function loadFromSheets() {
+            try {
+                const response = await fetch(
+                    `${SHEETS_API_BASE}/${SPREADSHEET_ID}/values/RentalData?key=${API_KEY}`
+                );
+                const data = await response.json();
+                
+                if (data.values && data.values.length > 1) {
+                    const rows = data.values.slice(1);
+                    laptops = rows.map(row => ({
+                        id: parseInt(row[0]),
+                        model: row[1],
+                        serial: row[2],
+                        status: row[3],
+                        rentedBy: row[4] ? parseInt(row[4]) : null,
+                        rentedAt: row[5] || null
+                    }));
+                    renderLaptopList();
+                    updateRentalSelects();
+                }
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+            }
+        }
+
+        async function saveToSheets() {
+            const rows = [
+                ['ID', '모델', '시리얼', '상태', '대여자ID', '대여일시']
+            ];
+            
+            laptops.forEach(laptop => {
+                rows.push([
+                    laptop.id,
+                    laptop.model,
+                    laptop.serial,
+                    laptop.status,
+                    laptop.rentedBy || '',
+                    laptop.rentedAt || ''
+                ]);
+            });
+
+            try {
+                const response = await fetch(
+                    `${SHEETS_API_BASE}/${SPREADSHEET_ID}/values/RentalData?valueInputOption=RAW&key=${API_KEY}`,
+                    {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({values: rows})
+                    }
+                );
+                
+                if (response.ok) {
+                    console.log('데이터 저장 완료');
+                }
+            } catch (error) {
+                console.error('데이터 저장 실패:', error);
+                alert('데이터 저장에 실패했습니다. 인터넷 연결을 확인해주세요.');
+            }
+        }
+
+        function formatDateTime(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+
+        function updateSummary() {
+            const totalCount = laptops.length;
+            const rentedCount = laptops.filter(l => l.status === 'rented').length;
+            const availableCount = totalCount - rentedCount;
+
+            document.getElementById('total-count').textContent = totalCount;
+            document.getElementById('available-count').textContent = availableCount;
+            document.getElementById('rented-count').textContent = rentedCount;
+        }
+
+        function renderLaptopList() {
+            const container = document.getElementById('laptop-list');
+            container.innerHTML = '';
+
+            laptops.forEach(laptop => {
+                const user = laptop.rentedBy ? users.find(u => u.id === laptop.rentedBy) : null;
+                
+                const item = document.createElement('div');
+                item.className = 'laptop-item';
+                
+                let rentalInfoHTML = '';
+                if (laptop.status === 'rented' && user) {
+                    rentalInfoHTML = `
+                        <div class="rental-info">
+                            대여자: ${user.name} (${user.department})<br>
+                            대여일: ${formatDateTime(laptop.rentedAt)}
+                        </div>
+                    `;
+                }
+                
+                item.innerHTML = `
+                    <div class="laptop-info">
+                        <div class="laptop-number">${laptop.id}번 노트북</div>
+                        <div class="laptop-model">${laptop.model}</div>
+                        <div class="laptop-serial">${laptop.serial}</div>
+                        ${rentalInfoHTML}
+                    </div>
+                    <div class="laptop-status">
+                        <span class="status-badge ${laptop.status === 'available' ? 'status-available' : 'status-rented'}">
+                            ${laptop.status === 'available' ? '대여 가능' : '대여 중'}
+                        </span>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+
+            updateSummary();
+        }
+
+        function updateRentalSelects() {
+            const rentList = document.getElementById('rent-laptop-list');
+            const returnList = document.getElementById('return-laptop-list');
+            
+            rentList.innerHTML = '';
+            returnList.innerHTML = '';
+            
+            const availableLaptops = laptops.filter(l => l.status === 'available');
+            const rentedLaptops = laptops.filter(l => l.status === 'rented');
+            
+            if (availableLaptops.length === 0) {
+                rentList.innerHTML = '<div class="checkbox-list-empty">대여 가능한 노트북이 없습니다.</div>';
+            } else {
+                availableLaptops.forEach(laptop => {
+                    const item = document.createElement('div');
+                    item.className = 'checkbox-item';
+                    item.innerHTML = `
+                        <input type="checkbox" id="rent-${laptop.id}" value="${laptop.id}">
+                        <label class="checkbox-label" for="rent-${laptop.id}">
+                            ${laptop.id}번 - ${laptop.model} (${laptop.serial})
+                        </label>
+                    `;
+                    rentList.appendChild(item);
+                });
+            }
+            
+            if (rentedLaptops.length === 0) {
+                returnList.innerHTML = '<div class="checkbox-list-empty">대여 중인 노트북이 없습니다.</div>';
+            } else {
+                rentedLaptops.forEach(laptop => {
+                    const user = users.find(u => u.id === laptop.rentedBy);
+                    const item = document.createElement('div');
+                    item.className = 'checkbox-item';
+                    item.innerHTML = `
+                        <input type="checkbox" id="return-${laptop.id}" value="${laptop.id}">
+                        <label class="checkbox-label" for="return-${laptop.id}">
+                            ${laptop.id}번 - ${laptop.model} (${user ? user.name : '알 수 없음'})
+                        </label>
+                    `;
+                    returnList.appendChild(item);
+                });
+            }
+        }
+
+        function updateUserSelect() {
+            const userSelect = document.getElementById('rent-user');
+            userSelect.innerHTML = '<option value="">사용자를 선택하세요</option>';
+            
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = `${user.name} (${user.department})`;
+                userSelect.appendChild(option);
+            });
+        }
+
+        async function rentLaptop() {
+            const userId = parseInt(document.getElementById('rent-user').value);
+            
+            if (!userId) {
+                alert('사용자를 선택해주세요.');
+                return;
+            }
+            
+            const checkedBoxes = document.querySelectorAll('#rent-laptop-list input[type="checkbox"]:checked');
+            
+            if (checkedBoxes.length === 0) {
+                alert('대여할 노트북을 선택해주세요.');
+                return;
+            }
+            
+            const user = users.find(u => u.id === userId);
+            const selectedLaptops = [];
+            
+            checkedBoxes.forEach(checkbox => {
+                const laptopId = parseInt(checkbox.value);
+                const laptop = laptops.find(l => l.id === laptopId);
+                
+                if (laptop && user) {
+                    laptop.status = 'rented';
+                    laptop.rentedBy = userId;
+                    laptop.rentedAt = new Date().toISOString();
+                    selectedLaptops.push(laptop.id);
+                }
+            });
+            
+            await saveToSheets();
+            
+            renderLaptopList();
+            updateRentalSelects();
+            
+            document.getElementById('rent-user').value = '';
+            
+            alert(`${selectedLaptops.length}개의 노트북(${selectedLaptops.join(', ')}번)이 ${user.name}님에게 대여되었습니다.`);
+        }
+
+        async function returnLaptop() {
+            const checkedBoxes = document.querySelectorAll('#return-laptop-list input[type="checkbox"]:checked');
+            
+            if (checkedBoxes.length === 0) {
+                alert('반납할 노트북을 선택해주세요.');
+                return;
+            }
+            
+            const returnedLaptops = [];
+            
+            checkedBoxes.forEach(checkbox => {
+                const laptopId = parseInt(checkbox.value);
+                const laptop = laptops.find(l => l.id === laptopId);
+                const user = users.find(u => u.id === laptop.rentedBy);
+                
+                if (laptop) {
+                    rentalHistory.push({
+                        laptopId: laptop.id,
+                        laptopModel: laptop.model,
+                        userId: laptop.rentedBy,
+                        userName: user ? user.name : '알 수 없음',
+                        userDept: user ? user.department : '',
+                        rentedAt: laptop.rentedAt,
+                        returnedAt: new Date().toISOString()
+                    });
+                    
+                    laptop.status = 'available';
+                    laptop.rentedBy = null;
+                    laptop.rentedAt = null;
+                    returnedLaptops.push(laptop.id);
+                }
+            });
+            
+            await saveToSheets();
+            
+            renderLaptopList();
+            updateRentalSelects();
+            renderHistory();
+            
+            alert(`${returnedLaptops.length}개의 노트북(${returnedLaptops.join(', ')}번)이 반납되었습니다.`);
+        }
+
+        function addUser() {
+            const name = document.getElementById('user-name').value.trim();
+            const dept = document.getElementById('user-dept').value.trim();
+            const phone = document.getElementById('user-phone').value.trim();
+            
+            if (!name || !dept || !phone) {
+                alert('모든 정보를 입력해주세요.');
+                return;
+            }
+            
+            users.push({
+                id: nextUserId++,
+                name: name,
+                department: dept,
+                phone: phone
+            });
+            
+            document.getElementById('user-name').value = '';
+            document.getElementById('user-dept').value = '';
+            document.getElementById('user-phone').value = '';
+            
+            renderUserList();
+            updateUserSelect();
+            
+            alert(`${name}님이 등록되었습니다.`);
+        }
+
+        function renderUserList() {
+            const container = document.getElementById('user-list');
+            container.innerHTML = '';
+            
+            if (users.length === 0) {
+                container.innerHTML = '<div class="empty-state">등록된 사용자가 없습니다.</div>';
+                return;
+            }
+            
+            users.forEach(user => {
+                const card = document.createElement('div');
+                card.className = 'user-card';
+                card.innerHTML = `
+                    <div class="user-name">${user.name}</div>
+                    <div class="user-detail">부서: ${user.department}</div>
+                    <div class="user-detail">연락처: ${user.phone}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            
+            if (rentalHistory.length === 0) {
+                container.innerHTML = '<div class="empty-state">대여 이력이 없습니다.</div>';
+                return;
+            }
+            
+            const sortedHistory = [...rentalHistory].sort((a, b) => 
+                new Date(b.returnedAt) - new Date(a.returnedAt)
+            );
+            
+            let html = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>노트북</th>
+                            <th>모델</th>
+                            <th>사용자</th>
+                            <th>부서</th>
+                            <th>대여일시</th>
+                            <th>반납일시</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            sortedHistory.forEach(record => {
+                html += `
+                    <tr>
+                        <td>${record.laptopId}번</td>
+                        <td>${record.laptopModel}</td>
+                        <td>${record.userName}</td>
+                        <td>${record.userDept}</td>
+                        <td>${formatDateTime(record.rentedAt)}</td>
+                        <td>${formatDateTime(record.returnedAt)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+
+        loadFromSheets();
+        renderLaptopList();
+        updateRentalSelects();
+        updateUserSelect();
+        renderUserList();
+        renderHistory();
+    </script>
+</body>
+</html>
+
