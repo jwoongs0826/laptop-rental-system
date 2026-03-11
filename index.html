@@ -506,11 +506,48 @@
     </div>
 
     <script>
-        // Google Sheets 설정
+        // ⚙️ Google Sheets 설정 (선택사항)
+        // Google Sheets와 연동하지 않아도 시스템은 정상 작동합니다.
+        // 브라우저 메모리에 데이터가 저장되며, 페이지를 새로고침하면 초기화됩니다.
+        // 
+        // Google Sheets 연동을 원하시면:
+        // 1. Google Sheets에서 스프레드시트 생성
+        // 2. 'RentalData'라는 시트 만들기
+        // 3. Google Cloud Console에서 API 키 발급
+        // 4. 아래 값들을 작은따옴표(') 안에 넣으세요
+        // 예시: const SPREADSHEET_ID = '1ABC123XYZ456';
         const SPREADSHEET_ID = '1DY-9x3SmD5W9uGUsIL2xsuKY9VNLRzeR_D7lar83CsY';
         const API_KEY = 'AIzaSyALC7BWBlTCKay9U1v20puWaBY4ucAe6aM';
+        
+        // ⚠️ 설정 확인: 시작 시 자동으로 체크합니다
+        window.addEventListener('DOMContentLoaded', () => {
+            if (SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE' || API_KEY === 'YOUR_API_KEY_HERE') {
+                const banner = document.createElement('div');
+                banner.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 12px 20px;
+                    text-align: center;
+                    font-weight: 600;
+                    z-index: 9999;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                `;
+                banner.textContent = '✅ 로컬 모드로 실행 중입니다. 데이터는 브라우저 로컬 저장소에 자동 저장됩니다. (페이지를 닫아도 데이터 유지)';
+                document.body.prepend(banner);
+                document.body.style.paddingTop = '60px';
+            }
+        });
         const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 
+        // 📝 노트북 목록 수정 방법:
+        // 1. 새 노트북 추가: 아래 배열에 줄 추가
+        // 2. 기존 노트북 수정: model, serial 값 변경
+        // 3. 노트북 삭제: 해당 줄 삭제
+        // 형식: {id: 번호, model: "모델명", serial: "시리얼번호", status: "available", rentedBy: null, rentedAt: null}
         let laptops = [
             {id: 1, model: "LG gram 16", serial: "LG2024001", status: "available", rentedBy: null, rentedAt: null},
             {id: 2, model: "LG gram 16", serial: "LG2024002", status: "available", rentedBy: null, rentedAt: null},
@@ -519,6 +556,11 @@
             {id: 5, model: "맥북 에어 M2", serial: "AP2024002", status: "available", rentedBy: null, rentedAt: null}
         ];
 
+        // 📝 사용자 목록 수정 방법:
+        // 1. 새 사용자 추가: 아래 배열에 줄 추가
+        // 2. 기존 사용자 수정: name, department, phone 값 변경
+        // 3. 사용자 삭제: 해당 줄 삭제
+        // 형식: {id: 번호, name: "이름", department: "부서", phone: "전화번호"}
         let users = [
             {id: 1, name: "김지훈", department: "개발팀", phone: "010-1234-5678"},
             {id: 2, name: "이서연", department: "디자인팀", phone: "010-2345-6789"},
@@ -527,6 +569,54 @@
 
         let rentalHistory = [];
         let nextUserId = 4;
+
+        // 🔄 로컬 스토리지 키 정의
+        const STORAGE_KEYS = {
+            laptops: 'laptop_rental_laptops',
+            users: 'laptop_rental_users',
+            history: 'laptop_rental_history',
+            nextUserId: 'laptop_rental_next_user_id'
+        };
+
+        // 🔄 로컬 스토리지에서 데이터 로드
+        function loadFromLocalStorage() {
+            try {
+                const savedLaptops = localStorage.getItem(STORAGE_KEYS.laptops);
+                const savedUsers = localStorage.getItem(STORAGE_KEYS.users);
+                const savedHistory = localStorage.getItem(STORAGE_KEYS.history);
+                const savedNextUserId = localStorage.getItem(STORAGE_KEYS.nextUserId);
+
+                if (savedLaptops) {
+                    laptops = JSON.parse(savedLaptops);
+                }
+                if (savedUsers) {
+                    users = JSON.parse(savedUsers);
+                }
+                if (savedHistory) {
+                    rentalHistory = JSON.parse(savedHistory);
+                }
+                if (savedNextUserId) {
+                    nextUserId = parseInt(savedNextUserId);
+                }
+
+                console.log('✅ 로컬 저장소에서 데이터 로드 완료');
+            } catch (error) {
+                console.error('로컬 저장소 로드 실패:', error);
+            }
+        }
+
+        // 로컬 스토리지에 데이터 저장
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.laptops, JSON.stringify(laptops));
+                localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
+                localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(rentalHistory));
+                localStorage.setItem(STORAGE_KEYS.nextUserId, nextUserId.toString());
+                console.log('✅ 로컬 저장소에 데이터 저장 완료');
+            } catch (error) {
+                console.error('로컬 저장소 저장 실패:', error);
+            }
+        }
 
         // Google Sheets 연동 함수
         async function loadFromSheets() {
@@ -555,6 +645,14 @@
         }
 
         async function saveToSheets() {
+            // 먼저 로컬 스토리지에 저장
+            saveToLocalStorage();
+            
+            if (SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE' || API_KEY === 'YOUR_API_KEY_HERE') {
+                console.log('로컬 모드: 브라우저 로컬 저장소에 저장되었습니다.');
+                return;
+            }
+            
             const rows = [
                 ['ID', '모델', '시리얼', '상태', '대여자ID', '대여일시']
             ];
@@ -581,11 +679,14 @@
                 );
                 
                 if (response.ok) {
-                    console.log('데이터 저장 완료');
+                    console.log('✅ 데이터 저장 완료');
+                } else {
+                    console.error('저장 실패:', await response.text());
+                    alert('데이터 저장 실패: API 키 또는 권한을 확인해주세요.');
                 }
             } catch (error) {
                 console.error('데이터 저장 실패:', error);
-                alert('데이터 저장에 실패했습니다. 인터넷 연결을 확인해주세요.');
+                alert('데이터 저장에 실패했습니다. 설정을 확인해주세요.');
             }
         }
 
@@ -804,6 +905,9 @@
                 phone: phone
             });
             
+            // 로컬 스토리지에 저장
+            saveToLocalStorage();
+            
             document.getElementById('user-name').value = '';
             document.getElementById('user-dept').value = '';
             document.getElementById('user-phone').value = '';
@@ -891,6 +995,8 @@
             });
         });
 
+        // 시작 시 로컬 스토리지에서 데이터 로드
+        loadFromLocalStorage();
         loadFromSheets();
         renderLaptopList();
         updateRentalSelects();
